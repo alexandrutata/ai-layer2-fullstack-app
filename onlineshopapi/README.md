@@ -29,13 +29,13 @@ Use the predefined IntelliJ run configurations from the `.run/` folder:
 
 ### Mock Users (local profile)
 
-The V1.1 migration seeds the following users (all passwords are `password`):
+The V1.1 migration seeds the following users:
 
-| Email                  | Role     |
-|------------------------|----------|
-| admin@onlineshop.com   | ADMIN    |
-| john.doe@email.com     | CUSTOMER |
-| jane.smith@email.com   | CUSTOMER |
+| Email                  | Role       | Password   |
+|------------------------|------------|------------|
+| `admin@onlineshop.com` | `ADMIN`    | `password` |
+| `john.doe@email.com`   | `CUSTOMER` | `password` |
+| `jane.smith@email.com` | `CUSTOMER` | `password` |
 
 ## Database Schema
 
@@ -112,12 +112,12 @@ erDiagram
 
 For deployed environments, all sensitive values must be provided via environment variables.
 
-| Variable             | Description                     |
-|----------------------|---------------------------------|
-| DB_HOST              | Database host address           |
-| DB_PORT              | Database port                   |
-| DB_NAME              | Database name                   |
-| DB_USERNAME          | Database username               |
-| DB_PASSWORD          | Database password               |
-| JWT_SECRET           | Secret key used for JWT signing |
-| CORS_ALLOWED_ORIGINS | Allowed client origins for CORS |
+| Variable               | Description                     |
+|------------------------|---------------------------------|
+| `DB_HOST`              | Database host address           |
+| `DB_PORT`              | Database port                   |
+| `DB_NAME`              | Database name                   |
+| `DB_USERNAME`          | Database username               |
+| `DB_PASSWORD`          | Database password               |
+| `JWT_SECRET`           | Secret key used for JWT signing |
+| `CORS_ALLOWED_ORIGINS` | Allowed client origins for CORS |
