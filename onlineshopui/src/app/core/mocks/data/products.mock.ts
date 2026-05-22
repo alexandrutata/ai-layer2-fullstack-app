@@ -1,4 +1,4 @@
-import { ProductCategoryDto, ProductDto } from '../../types/dtos/product.dto';
+import { ProductCategoryDto, ProductDto, SupplierDto } from '../../types/dtos/product.dto';
 
 export const MOCK_CATEGORIES: ProductCategoryDto[] = [
     {
@@ -23,6 +23,30 @@ export const MOCK_CATEGORIES: ProductCategoryDto[] = [
     }
 ];
 
+export const MOCK_SUPPLIERS: SupplierDto[] = [
+    {
+        id: 'sup-1',
+        name: 'TechSupply Co.',
+        email: 'contact@techsupply.com',
+        phone: '+1-800-123-4567',
+        address: '123 Silicon Valley Blvd, San Jose, CA 95101'
+    },
+    {
+        id: 'sup-2',
+        name: 'FashionWholesale Ltd.',
+        email: 'orders@fashionwholesale.com',
+        phone: '+1-800-234-5678',
+        address: '456 Garment District, New York, NY 10018'
+    },
+    {
+        id: 'sup-3',
+        name: 'HomeGoods Distributors',
+        email: 'sales@homegoods-dist.com',
+        phone: '+1-800-345-6789',
+        address: '789 Industrial Park, Chicago, IL 60601'
+    }
+];
+
 export const MOCK_PRODUCTS: ProductDto[] = [
     {
         id: 'prod-1',
@@ -31,6 +55,7 @@ export const MOCK_PRODUCTS: ProductDto[] = [
         price: 149.99,
         weight: 0.25,
         category: MOCK_CATEGORIES[0],
+        supplier: MOCK_SUPPLIERS[0],
         imageUrl: 'https://picsum.photos/seed/headphones/400/300'
     },
     {
@@ -40,6 +65,7 @@ export const MOCK_PRODUCTS: ProductDto[] = [
         price: 299.99,
         weight: 0.05,
         category: MOCK_CATEGORIES[0],
+        supplier: MOCK_SUPPLIERS[0],
         imageUrl: 'https://picsum.photos/seed/smartwatch/400/300'
     },
     {
@@ -49,6 +75,7 @@ export const MOCK_PRODUCTS: ProductDto[] = [
         price: 79.99,
         weight: 0.5,
         category: MOCK_CATEGORIES[0],
+        supplier: MOCK_SUPPLIERS[0],
         imageUrl: 'https://picsum.photos/seed/speaker/400/300'
     },
     {
@@ -58,6 +85,7 @@ export const MOCK_PRODUCTS: ProductDto[] = [
         price: 24.99,
         weight: 0.2,
         category: MOCK_CATEGORIES[1],
+        supplier: MOCK_SUPPLIERS[1],
         imageUrl: 'https://picsum.photos/seed/tshirt/400/300'
     },
     {
@@ -67,6 +95,7 @@ export const MOCK_PRODUCTS: ProductDto[] = [
         price: 59.99,
         weight: 0.6,
         category: MOCK_CATEGORIES[1],
+        supplier: MOCK_SUPPLIERS[1],
         imageUrl: 'https://picsum.photos/seed/jeans/400/300'
     },
     {
@@ -76,6 +105,7 @@ export const MOCK_PRODUCTS: ProductDto[] = [
         price: 34.99,
         weight: 2.5,
         category: MOCK_CATEGORIES[2],
+        supplier: MOCK_SUPPLIERS[2],
         imageUrl: 'https://picsum.photos/seed/hose/400/300'
     },
     {
@@ -85,6 +115,7 @@ export const MOCK_PRODUCTS: ProductDto[] = [
         price: 44.99,
         weight: 0.8,
         category: MOCK_CATEGORIES[2],
+        supplier: MOCK_SUPPLIERS[2],
         imageUrl: 'https://picsum.photos/seed/lamp/400/300'
     },
     {
@@ -93,7 +124,8 @@ export const MOCK_PRODUCTS: ProductDto[] = [
         description: 'Non-slip yoga mat with carrying strap',
         price: 29.99,
         weight: 1.2,
-        category: MOCK_CATEGORIES[3],
+        category: MOCK_CATEGORIES[2],
+        supplier: MOCK_SUPPLIERS[2],
         imageUrl: 'https://picsum.photos/seed/yogamat/400/300'
     },
     {
@@ -102,7 +134,8 @@ export const MOCK_PRODUCTS: ProductDto[] = [
         description: 'Lightweight running shoes with cushioned sole',
         price: 89.99,
         weight: 0.7,
-        category: MOCK_CATEGORIES[3],
+        category: MOCK_CATEGORIES[2],
+        supplier: MOCK_SUPPLIERS[2],
         imageUrl: 'https://picsum.photos/seed/shoes/400/300'
     },
     {
@@ -112,6 +145,7 @@ export const MOCK_PRODUCTS: ProductDto[] = [
         price: 69.99,
         weight: 0.03,
         category: MOCK_CATEGORIES[3],
+        supplier: MOCK_SUPPLIERS[0],
         imageUrl: 'https://picsum.photos/seed/tracker/400/300'
     }
 ];

@@ -1,8 +1,9 @@
 import { HttpResponse } from '@angular/common/http';
-import { MOCK_CATEGORIES, MOCK_PRODUCTS } from '../../data/products.mock';
+import { MOCK_CATEGORIES, MOCK_PRODUCTS, MOCK_SUPPLIERS } from '../../data/products.mock';
 import {
     CreateProductRequest,
     ProductDto,
+    SupplierDto,
     UpdateProductRequest
 } from '../../../types/dtos/product.dto';
 
@@ -19,6 +20,15 @@ export function handleProductsFeature(
     context: ProductsHandlerContext
 ): HttpResponse<unknown> | null {
     const { method, path, body } = context;
+
+    if (method === 'GET' && path === '/suppliers') {
+        return handleGetSuppliers();
+    }
+
+    if (method === 'GET' && path.match(/^\/suppliers\/[\w-]+$/)) {
+        const id = path.split('/').pop()!;
+        return handleGetSupplierById(id);
+    }
 
     if (method === 'GET' && path === '/products/categories') {
         return handleGetCategories();
@@ -48,6 +58,30 @@ export function handleProductsFeature(
     }
 
     return null;
+}
+
+function handleGetSuppliers(): HttpResponse<unknown> {
+    return new HttpResponse({
+        status: 200,
+        body: MOCK_SUPPLIERS
+    });
+}
+
+function handleGetSupplierById(id: string): HttpResponse<unknown> {
+    const supplier = MOCK_SUPPLIERS.find(s => s.id === id);
+
+    if (!supplier) {
+        return new HttpResponse({
+            status: 404,
+            statusText: 'Not Found',
+            body: { message: 'Supplier not found' }
+        });
+    }
+
+    return new HttpResponse({
+        status: 200,
+        body: supplier
+    });
 }
 
 function handleGetCategories(): HttpResponse<unknown> {
@@ -92,6 +126,16 @@ function handleCreateProduct(body: CreateProductRequest): HttpResponse<unknown> 
         });
     }
 
+    const supplier = MOCK_SUPPLIERS.find(s => s.id === body.supplierId);
+
+    if (!supplier) {
+        return new HttpResponse({
+            status: 400,
+            statusText: 'Bad Request',
+            body: { message: 'Invalid supplier' }
+        });
+    }
+
     const newProduct: ProductDto = {
         id: `prod-${mockProductIdCounter++}`,
         name: body.name,
@@ -99,7 +143,8 @@ function handleCreateProduct(body: CreateProductRequest): HttpResponse<unknown> 
         price: body.price,
         weight: body.weight,
         imageUrl: body.imageUrl,
-        category
+        category,
+        supplier
     };
 
     mockProducts.push(newProduct);
@@ -123,11 +168,19 @@ function handleUpdateProduct(id: string, body: UpdateProductRequest): HttpRespon
 
     const existingProduct = mockProducts[index];
     let category = existingProduct.category;
+    let supplier: SupplierDto = existingProduct.supplier;
 
     if (body.categoryId) {
         const foundCategory = MOCK_CATEGORIES.find(c => c.id === body.categoryId);
         if (foundCategory) {
             category = foundCategory;
+        }
+    }
+
+    if (body.supplierId) {
+        const foundSupplier = MOCK_SUPPLIERS.find(s => s.id === body.supplierId);
+        if (foundSupplier) {
+            supplier = foundSupplier;
         }
     }
 
@@ -138,7 +191,8 @@ function handleUpdateProduct(id: string, body: UpdateProductRequest): HttpRespon
         price: body.price ?? existingProduct.price,
         weight: body.weight ?? existingProduct.weight,
         imageUrl: body.imageUrl ?? existingProduct.imageUrl,
-        category
+        category,
+        supplier
     };
 
     mockProducts[index] = updatedProduct;
