@@ -1,5 +1,6 @@
 package msg.onlineshopapi.dto;
 
+import jakarta.validation.constraints.NotNull;
 import lombok.*;
 
 import java.math.BigDecimal;
@@ -17,6 +18,8 @@ public class ProductRequestDto {
     private BigDecimal price;
     private Double weight;
     private String imageUrl;
+    @NotNull
     private UUID categoryId;
+    @NotNull
     private UUID supplierId;
 }

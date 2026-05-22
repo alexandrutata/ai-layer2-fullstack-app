@@ -26,7 +26,6 @@ export class SupplierService {
 
         return this.http.get<SupplierDto[]>(this.suppliersUrl).pipe(
             tap(suppliers => this._suppliers.set(suppliers)),
-            tap(() => this._error.set(null)),
             catchError(() => {
                 this._error.set('Failed to load suppliers');
                 return of([]);

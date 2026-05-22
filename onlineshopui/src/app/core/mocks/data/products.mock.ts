@@ -124,7 +124,7 @@ export const MOCK_PRODUCTS: ProductDto[] = [
         description: 'Non-slip yoga mat with carrying strap',
         price: 29.99,
         weight: 1.2,
-        category: MOCK_CATEGORIES[2],
+        category: MOCK_CATEGORIES[3],
         supplier: MOCK_SUPPLIERS[2],
         imageUrl: 'https://picsum.photos/seed/yogamat/400/300'
     },
@@ -134,7 +134,7 @@ export const MOCK_PRODUCTS: ProductDto[] = [
         description: 'Lightweight running shoes with cushioned sole',
         price: 89.99,
         weight: 0.7,
-        category: MOCK_CATEGORIES[2],
+        category: MOCK_CATEGORIES[3],
         supplier: MOCK_SUPPLIERS[2],
         imageUrl: 'https://picsum.photos/seed/shoes/400/300'
     },

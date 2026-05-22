@@ -127,7 +127,7 @@ class ProductControllerTest {
     @WithMockUser(roles = "CUSTOMER")
     void create_returns403_whenNotAdmin() throws Exception {
         ProductRequestDto request = ProductRequestDto.builder()
-                .name("Laptop").price(BigDecimal.valueOf(999.99)).categoryId(categoryId).build();
+                .name("Laptop").price(BigDecimal.valueOf(999.99)).categoryId(categoryId).supplierId(supplierId).build();
 
         mockMvc.perform(post("/products")
                         .contentType(MediaType.APPLICATION_JSON)
@@ -159,7 +159,7 @@ class ProductControllerTest {
     @WithMockUser(roles = "ADMIN")
     void update_returns404_whenProductNotFound() throws Exception {
         ProductRequestDto request = ProductRequestDto.builder()
-                .name("Laptop").price(BigDecimal.valueOf(999.99)).categoryId(categoryId).build();
+                .name("Laptop").price(BigDecimal.valueOf(999.99)).categoryId(categoryId).supplierId(supplierId).build();
         Product entity = Product.builder().name("Laptop").build();
 
         when(productMapper.toEntity(any(ProductRequestDto.class))).thenReturn(entity);
@@ -177,7 +177,7 @@ class ProductControllerTest {
     @WithMockUser(roles = "CUSTOMER")
     void update_returns403_whenNotAdmin() throws Exception {
         ProductRequestDto request = ProductRequestDto.builder()
-                .name("Laptop").price(BigDecimal.valueOf(999.99)).categoryId(categoryId).build();
+                .name("Laptop").price(BigDecimal.valueOf(999.99)).categoryId(categoryId).supplierId(supplierId).build();
 
         mockMvc.perform(put("/products/{id}", laptopId)
                         .contentType(MediaType.APPLICATION_JSON)
