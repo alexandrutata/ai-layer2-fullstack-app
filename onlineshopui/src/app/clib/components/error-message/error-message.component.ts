@@ -1,4 +1,5 @@
-import { Component, input, computed, inject, ChangeDetectionStrategy } from '@angular/core';
+import { Component, input, computed, inject, ChangeDetectionStrategy, OnInit, signal, DestroyRef } from '@angular/core';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { AbstractControl } from '@angular/forms';
 import {
     ValidationMessages,
@@ -17,12 +18,24 @@ import {
     `,
     changeDetection: ChangeDetectionStrategy.OnPush
 })
-export class ErrorMessageComponent {
+export class ErrorMessageComponent implements OnInit {
     control = input.required<AbstractControl | null>();
 
     private readonly validationMessages = inject<ValidationMessagesMap>(ValidationMessages);
+    private readonly destroyRef = inject(DestroyRef);
+
+    private readonly _controlVersion = signal(0);
+
+    ngOnInit(): void {
+        const ctrl = this.control();
+        if (!ctrl) return;
+        ctrl.events.pipe(takeUntilDestroyed(this.destroyRef)).subscribe(() => {
+            this._controlVersion.update(v => v + 1);
+        });
+    }
 
     errorMessage = computed(() => {
+        this._controlVersion(); // reactive dependency
         const ctrl = this.control();
         if (!ctrl?.errors || !ctrl.touched) {
             return null;

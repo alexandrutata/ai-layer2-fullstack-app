@@ -1,9 +1,13 @@
-import { ChangeDetectionStrategy, Component, input, output } from '@angular/core';
+import { ChangeDetectionStrategy, ChangeDetectorRef, Component, inject, input, output } from '@angular/core';
+import { ReactiveFormsModule } from '@angular/forms';
 import { CardComponent } from '../../../../../clib/components/card/card.component';
+import { ErrorMessageComponent } from '../../../../../clib/components/error-message/error-message.component';
+import { AddressDto } from '../../../../../core/types/dtos/location.dto';
+import { createAddressForm } from '../../../utils/address-form.utils';
 
 @Component({
     selector: 'app-cart-summary',
-    imports: [CardComponent],
+    imports: [CardComponent, ReactiveFormsModule, ErrorMessageComponent],
     templateUrl: './cart-summary.component.html',
     changeDetection: ChangeDetectionStrategy.OnPush
 })
@@ -12,11 +16,17 @@ export class CartSummaryComponent {
     itemCount = input.required<number>();
     isSubmitting = input<boolean>(false);
 
-    checkout = output<void>();
+    checkout = output<AddressDto>();
     clear = output<void>();
 
+    readonly addressForm = createAddressForm();
+    private readonly cdr = inject(ChangeDetectorRef);
+
     onCheckout(): void {
-        this.checkout.emit();
+        this.addressForm.markAllAsTouched();
+        this.cdr.markForCheck();
+        if (this.addressForm.invalid) return;
+        this.checkout.emit(this.addressForm.getRawValue() as AddressDto);
     }
 
     onClear(): void {

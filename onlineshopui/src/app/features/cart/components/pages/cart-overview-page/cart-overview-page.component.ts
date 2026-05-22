@@ -16,6 +16,7 @@ import { CartItemRowComponent } from '../../views/cart-item-row/cart-item-row.co
 import { CartSummaryComponent } from '../../views/cart-summary/cart-summary.component';
 import { AppNavRoutes } from '../../../../../core/config/constants/navigation.constants';
 import { NotificationsService } from '../../../../../core/services/notifications.service';
+import { AddressDto } from '../../../../../core/types/dtos/location.dto';
 import {
     buildProductsById,
     calculateCartSubtotal,
@@ -70,10 +71,10 @@ export class CartOverviewPageComponent implements OnInit {
         this.cartService.clear();
     }
 
-    onCheckout(): void {
+    onCheckout(address: AddressDto): void {
         if (this.cartItems().length === 0) return;
 
-        const payload = toCreateOrderDto(this.cartItems());
+        const payload = toCreateOrderDto(this.cartItems(), address);
         if (!payload) return;
 
         this.isSubmitting.set(true);

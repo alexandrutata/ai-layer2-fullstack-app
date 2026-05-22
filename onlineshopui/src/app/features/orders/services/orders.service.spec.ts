@@ -227,6 +227,7 @@ describe('OrdersService', () => {
         it('should create a new order and add to orders signal', () => {
             // Prepare
             const createOrderData: CreateOrderDto = {
+                address: { country: 'USA', city: 'Seattle', county: 'King', streetAddress: '123 Pine St' },
                 items: [
                     {
                         productId: 'prod-3',
@@ -268,6 +269,7 @@ describe('OrdersService', () => {
         it('should send correct request body', () => {
             // Prepare
             const createOrderData: CreateOrderDto = {
+                address: { country: 'USA', city: 'Seattle', county: 'King', streetAddress: '123 Pine St' },
                 items: [
                     {
                         productId: 'prod-1',
@@ -293,6 +295,7 @@ describe('OrdersService', () => {
         it('should handle error when creating order fails', () => {
             // Prepare
             const createOrderData: CreateOrderDto = {
+                address: { country: 'USA', city: 'Seattle', county: 'King', streetAddress: '123 Pine St' },
                 items: [
                     {
                         productId: 'prod-1',
