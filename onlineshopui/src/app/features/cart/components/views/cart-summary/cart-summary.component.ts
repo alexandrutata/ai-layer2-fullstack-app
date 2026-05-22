@@ -1,4 +1,4 @@
-import { ChangeDetectionStrategy, Component, input, output } from '@angular/core';
+import { ChangeDetectionStrategy, ChangeDetectorRef, Component, inject, input, output } from '@angular/core';
 import { ReactiveFormsModule } from '@angular/forms';
 import { CardComponent } from '../../../../../clib/components/card/card.component';
 import { ErrorMessageComponent } from '../../../../../clib/components/error-message/error-message.component';
@@ -9,7 +9,7 @@ import { createAddressForm } from '../../../utils/address-form.utils';
     selector: 'app-cart-summary',
     imports: [CardComponent, ReactiveFormsModule, ErrorMessageComponent],
     templateUrl: './cart-summary.component.html',
-    changeDetection: ChangeDetectionStrategy.Default
+    changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class CartSummaryComponent {
     subtotal = input.required<string>();
@@ -20,9 +20,11 @@ export class CartSummaryComponent {
     clear = output<void>();
 
     readonly addressForm = createAddressForm();
+    private readonly cdr = inject(ChangeDetectorRef);
 
     onCheckout(): void {
         this.addressForm.markAllAsTouched();
+        this.cdr.markForCheck();
         if (this.addressForm.invalid) return;
         this.checkout.emit(this.addressForm.getRawValue() as AddressDto);
     }

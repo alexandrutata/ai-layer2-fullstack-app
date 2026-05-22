@@ -1,6 +1,6 @@
-import { Component, input, computed, inject, ChangeDetectionStrategy, OnInit, signal, OnDestroy } from '@angular/core';
+import { Component, input, computed, inject, ChangeDetectionStrategy, OnInit, signal, DestroyRef } from '@angular/core';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { AbstractControl } from '@angular/forms';
-import { Subscription } from 'rxjs';
 import {
     ValidationMessages,
     ValidationMessagesMap
@@ -18,29 +18,20 @@ import {
     `,
     changeDetection: ChangeDetectionStrategy.OnPush
 })
-export class ErrorMessageComponent implements OnInit, OnDestroy {
+export class ErrorMessageComponent implements OnInit {
     control = input.required<AbstractControl | null>();
 
     private readonly validationMessages = inject<ValidationMessagesMap>(ValidationMessages);
+    private readonly destroyRef = inject(DestroyRef);
 
-    // Signal updated whenever the control's status or touched state changes
     private readonly _controlVersion = signal(0);
-    private _sub: Subscription | null = null;
 
     ngOnInit(): void {
         const ctrl = this.control();
         if (!ctrl) return;
-        // statusChanges fires on validity changes; we also need touched changes
-        // markAllAsTouched() doesn't emit on statusChanges, but calling
-        // updateValueAndValidity after markAllAsTouched does — handled in parent.
-        // We subscribe to both events here for completeness.
-        this._sub = ctrl.events.subscribe(() => {
+        ctrl.events.pipe(takeUntilDestroyed(this.destroyRef)).subscribe(() => {
             this._controlVersion.update(v => v + 1);
         });
-    }
-
-    ngOnDestroy(): void {
-        this._sub?.unsubscribe();
     }
 
     errorMessage = computed(() => {
