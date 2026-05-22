@@ -75,7 +75,7 @@ export class ProductService {
     }
 
     create(
-        data: Omit<ProductDto, 'id' | 'category'> & { categoryId: string }
+        data: Omit<ProductDto, 'id' | 'category' | 'supplier'> & { categoryId: string; supplierId: string }
     ): Observable<ProductDto> {
         return this.http.post<ProductDto>(this.productsUrl, data).pipe(
             tap(newProduct => {

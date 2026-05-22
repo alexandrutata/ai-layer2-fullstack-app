@@ -5,8 +5,10 @@ import { vi } from 'vitest';
 import { signal } from '@angular/core';
 import { ProductCreatePageComponent } from './product-create-page.component';
 import { ProductService } from '../../../services/product.service';
+import { SupplierService } from '../../../services/supplier.service';
 import { NotificationsService } from '../../../../../core/services/notifications.service';
 import { MOCK_CATEGORIES, MOCK_PRODUCTS } from '../../../../../core/mocks/data/products.mock';
+import { MOCK_SUPPLIERS } from '../../../../../core/mocks/data/suppliers.mock';
 import { AppNavRoutes } from '../../../../../core/config/constants/navigation.constants';
 import { ValidationMessages } from '../../../../../core/types/providers/validation-messages';
 import { DefaultValidationMessages } from '../../../../../core/config/constants/validation.constants';
@@ -19,6 +21,10 @@ describe('ProductCreatePageComponent', () => {
         loading: ReturnType<typeof signal>;
         loadCategories: ReturnType<typeof vi.fn>;
         create: ReturnType<typeof vi.fn>;
+    };
+    let supplierServiceMock: {
+        suppliers: ReturnType<typeof signal>;
+        loadAll: ReturnType<typeof vi.fn>;
     };
     let routerMock: {
         navigate: ReturnType<typeof vi.fn>;
@@ -38,6 +44,10 @@ describe('ProductCreatePageComponent', () => {
             loadCategories: vi.fn().mockReturnValue(of(MOCK_CATEGORIES)),
             create: vi.fn().mockReturnValue(of(MOCK_PRODUCTS[0]))
         };
+        supplierServiceMock = {
+            suppliers: signal([...MOCK_SUPPLIERS]),
+            loadAll: vi.fn().mockReturnValue(of(MOCK_SUPPLIERS))
+        };
 
         routerMock = {
             navigate: vi.fn()
@@ -52,6 +62,7 @@ describe('ProductCreatePageComponent', () => {
             imports: [ProductCreatePageComponent],
             providers: [
                 { provide: ProductService, useValue: productServiceMock },
+                { provide: SupplierService, useValue: supplierServiceMock },
                 { provide: Router, useValue: routerMock },
                 { provide: NotificationsService, useValue: notificationsServiceMock },
                 { provide: ValidationMessages, useValue: DefaultValidationMessages }
@@ -78,7 +89,7 @@ describe('ProductCreatePageComponent', () => {
             expect(component).toBeTruthy();
         });
 
-        it('should load categories on init', () => {
+        it('should load categories and suppliers on init', () => {
             // Prepare
             // (component created in beforeEach)
 
@@ -87,6 +98,7 @@ describe('ProductCreatePageComponent', () => {
 
             // Verify
             expect(productServiceMock.loadCategories).toHaveBeenCalled();
+            expect(supplierServiceMock.loadAll).toHaveBeenCalled();
         });
 
         it('should initialize with empty form', () => {
@@ -103,7 +115,8 @@ describe('ProductCreatePageComponent', () => {
                 price: 0,
                 weight: 0,
                 imageUrl: '',
-                categoryId: ''
+                categoryId: '',
+                supplierId: ''
             });
         });
     });
@@ -131,7 +144,8 @@ describe('ProductCreatePageComponent', () => {
                 price: 99.99,
                 weight: 1.5,
                 imageUrl: 'http://test.com/image.jpg',
-                categoryId: 'cat-1'
+                categoryId: MOCK_CATEGORIES[0].id,
+                supplierId: MOCK_SUPPLIERS[0].id
             });
 
             // Action
@@ -157,7 +171,8 @@ describe('ProductCreatePageComponent', () => {
                 price: 99.99,
                 weight: 1.5,
                 imageUrl: 'http://test.com/image.jpg',
-                categoryId: 'cat-1'
+                categoryId: MOCK_CATEGORIES[0].id,
+                supplierId: MOCK_SUPPLIERS[0].id
             });
             productServiceMock.create.mockReturnValue(throwError(() => new Error('Failed')));
 
@@ -181,7 +196,8 @@ describe('ProductCreatePageComponent', () => {
                 price: 99.99,
                 weight: 1.5,
                 imageUrl: 'http://test.com/image.jpg',
-                categoryId: 'cat-1'
+                categoryId: MOCK_CATEGORIES[0].id,
+                supplierId: MOCK_SUPPLIERS[0].id
             });
             expect(component.form.enabled).toBe(true);
 

@@ -9,6 +9,7 @@ import msg.onlineshopapi.dto.ProductRequestDto;
 import msg.onlineshopapi.dto.ProductResponseDto;
 import msg.onlineshopapi.dto.mapper.ProductMapper;
 import msg.onlineshopapi.service.ProductService;
+import jakarta.validation.Valid;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
@@ -50,7 +51,7 @@ public class ProductController {
     @Operation(summary = "Create a product", description = "Creates a new product. Requires ADMIN role.")
     @ApiResponse(responseCode = "200", description = "Product created successfully")
     @ApiResponse(responseCode = "403", description = "Access denied")
-    public ProductResponseDto create(@RequestBody ProductRequestDto dto) {
+    public ProductResponseDto create(@Valid @RequestBody ProductRequestDto dto) {
         return productMapper.toDto(productService.save(productMapper.toEntity(dto)));
     }
 
@@ -60,7 +61,7 @@ public class ProductController {
     @ApiResponse(responseCode = "200", description = "Product updated successfully")
     @ApiResponse(responseCode = "403", description = "Access denied")
     @ApiResponse(responseCode = "404", description = "Product not found")
-    public ProductResponseDto update(@Parameter(description = "Product ID") @PathVariable UUID id, @RequestBody ProductRequestDto dto) {
+    public ProductResponseDto update(@Parameter(description = "Product ID") @PathVariable UUID id, @Valid @RequestBody ProductRequestDto dto) {
         return productMapper.toDto(productService.update(id, productMapper.toEntity(dto)));
     }
 
