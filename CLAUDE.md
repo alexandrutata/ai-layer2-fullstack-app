@@ -5,7 +5,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 ## Project Overview
 
 This is a fullstack e-commerce application with:
-- **Backend**: Spring Boot 4.0.3 API (`onlineshopapi/`)
+- **Backend**: Spring Boot 4.0.6 API (`onlineshopapi/`)
 - **Frontend**: Angular 21 SPA (`onlineshopui/`)
 - **Database**: PostgreSQL 18
 
@@ -28,7 +28,7 @@ docker-compose up -d
 ```
 
 Database credentials (local):
-- Host: localhost:5432
+- Host: localhost:5433  ← Docker maps 5433 on the host to 5432 inside the container
 - Database: shopdb
 - User: shopuser
 - Password: shoppassword
@@ -131,7 +131,7 @@ onlineshopapi/src/main/java/msg/onlineshopapi/
 - REST controllers use DTOs for request/response
 - Service layer contains business logic
 - JWT-based authentication with Spring Security
-- Strategy pattern for order processing (`SINGLE_LOCATION` vs `MULTIPLE_LOCATIONS`)
+- Strategy pattern for order processing (`SINGLE_LOCATION` vs `MOST_ABUNDANT`)
 - Flyway for database migrations in `src/main/resources/db/migration/`
 
 **API Documentation:**
@@ -192,6 +192,14 @@ User roles (`ADMIN`, `CUSTOMER`) control access via `@PreAuthorize` annotations 
 - `onlineshopui/src/app/app.routes.ts` - Main routing configuration
 - `onlineshopui/src/app/core/config/constants/navigation.constants.ts` - Route constants
 - `docker/development/docker-compose.yml` - Local database setup
+
+## Gotchas
+
+- **DB host port is 5433, not 5432.** Docker Compose maps `5433→5432`. The `local` Spring profile already accounts for this; watch out when connecting with external clients (e.g. TablePlus, psql).
+
+- **Local seed data comes from a separate Flyway path.** The `local` Spring profile adds `classpath:db/migration/local` so `V1.1__populate_mock_data.sql` runs only in local dev. Mock data won't appear in other profiles.
+
+- **`npm start` hardcodes the backend URL.** It uses `environment.dev.ts` (`http://localhost:3000/api`), not the base `environment.ts`. Setting `API_URL` in your shell has no effect on local dev — edit `environment.dev.ts` if you need a different URL.
 
 ## Contributing
 
