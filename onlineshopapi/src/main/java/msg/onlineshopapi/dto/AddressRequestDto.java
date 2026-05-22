@@ -1,13 +1,15 @@
 package msg.onlineshopapi.dto;
 
+import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import jakarta.validation.constraints.NotBlank;
-import lombok.*;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.Getter;
 
 @Getter
-@Setter
-@NoArgsConstructor
 @AllArgsConstructor
 @Builder
+@JsonDeserialize(builder = AddressRequestDto.AddressRequestDtoBuilder.class)
 public class AddressRequestDto {
 
     @NotBlank
