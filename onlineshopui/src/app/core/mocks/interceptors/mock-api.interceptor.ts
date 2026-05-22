@@ -3,6 +3,7 @@ import { delay, of } from 'rxjs';
 import { handleAuthFeature } from './handlers/auth-handler.mock';
 import { handleOrdersFeature } from './handlers/orders-handler.mock';
 import { handleProductsFeature } from './handlers/products-handler.mock';
+import { handleSuppliersFeature } from './handlers/suppliers-handler.mock';
 
 const MOCK_API_URL = 'http://mock-api';
 
@@ -29,6 +30,13 @@ export const mockApiInterceptor: HttpInterceptorFn = (request, next) => {
     if (authResponse) {
         logMockResponse(authContext, authResponse);
         return toDelayedResponse(authResponse);
+    }
+
+    const suppliersContext = { method, path, body: request.body };
+    const suppliersResponse = handleSuppliersFeature(suppliersContext);
+    if (suppliersResponse) {
+        logMockResponse(suppliersContext, suppliersResponse);
+        return toDelayedResponse(suppliersResponse);
     }
 
     const productsContext = {

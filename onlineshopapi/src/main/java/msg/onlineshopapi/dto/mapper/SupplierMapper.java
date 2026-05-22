@@ -17,4 +17,13 @@ public class SupplierMapper {
                 .build();
     }
 
+    public Supplier toEntity(SupplierDto dto) {
+        return Supplier.builder()
+                .id(dto.getId())
+                .name(dto.getName())
+                .email(dto.getEmail())
+                .phone(dto.getPhone())
+                .address(dto.getAddress())
+                .build();
+    }
 }

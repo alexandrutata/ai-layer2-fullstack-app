@@ -1,6 +1,7 @@
 import { Component, input, output, ChangeDetectionStrategy } from '@angular/core';
 import { ReactiveFormsModule } from '@angular/forms';
-import { ProductCategoryDto, SupplierDto } from '../../../../../core/types/dtos/product.dto';
+import { ProductCategoryDto } from '../../../../../core/types/dtos/product.dto';
+import { SupplierDto } from '../../../../../core/types/dtos/supplier.dto';
 import { ProductFormGroup } from '../../../types/product-form.types';
 import { ErrorMessageComponent } from '../../../../../clib/components/error-message/error-message.component';
 

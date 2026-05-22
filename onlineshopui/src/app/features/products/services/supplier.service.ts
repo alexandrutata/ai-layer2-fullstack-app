@@ -1,7 +1,7 @@
 import { HttpClient } from '@angular/common/http';
 import { inject, Injectable, signal } from '@angular/core';
 import { Observable, tap, finalize, catchError, of, map } from 'rxjs';
-import { SupplierDto } from '../../../core/types/dtos/product.dto';
+import { SupplierDto } from '../../../core/types/dtos/supplier.dto';
 import { EnvironmentConfig } from '../../../core/types/providers/environment-config';
 
 @Injectable({
@@ -13,10 +13,12 @@ export class SupplierService {
     private readonly suppliersUrl = `${this.environmentConfig.apiUrl}/suppliers`;
 
     private readonly _suppliers = signal<SupplierDto[]>([]);
+    private readonly _selectedSupplier = signal<SupplierDto | null>(null);
     private readonly _loading = signal(false);
     private readonly _error = signal<string | null>(null);
 
     readonly suppliers = this._suppliers.asReadonly();
+    readonly selectedSupplier = this._selectedSupplier.asReadonly();
     readonly loading = this._loading.asReadonly();
     readonly error = this._error.asReadonly();
 
@@ -29,6 +31,22 @@ export class SupplierService {
             catchError(() => {
                 this._error.set('Failed to load suppliers');
                 return of([]);
+            }),
+            finalize(() => this._loading.set(false)),
+            map(() => undefined)
+        );
+    }
+
+    loadById(id: string): Observable<void> {
+        this._loading.set(true);
+        this._error.set(null);
+
+        return this.http.get<SupplierDto>(`${this.suppliersUrl}/${id}`).pipe(
+            tap(supplier => this._selectedSupplier.set(supplier)),
+            catchError(() => {
+                this._error.set('Failed to load supplier');
+                this._selectedSupplier.set(null);
+                return of(null);
             }),
             finalize(() => this._loading.set(false)),
             map(() => undefined)

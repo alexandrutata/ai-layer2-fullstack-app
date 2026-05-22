@@ -7,7 +7,8 @@ import { ProductUpdatePageComponent } from './product-update-page.component';
 import { ProductService } from '../../../services/product.service';
 import { SupplierService } from '../../../services/supplier.service';
 import { NotificationsService } from '../../../../../core/services/notifications.service';
-import { MOCK_CATEGORIES, MOCK_PRODUCTS, MOCK_SUPPLIERS } from '../../../../../core/mocks/data/products.mock';
+import { MOCK_CATEGORIES, MOCK_PRODUCTS } from '../../../../../core/mocks/data/products.mock';
+import { MOCK_SUPPLIERS } from '../../../../../core/mocks/data/suppliers.mock';
 import { AppNavRoutes } from '../../../../../core/config/constants/navigation.constants';
 import { ValidationMessages } from '../../../../../core/types/providers/validation-messages';
 import { DefaultValidationMessages } from '../../../../../core/config/constants/validation.constants';
@@ -34,6 +35,7 @@ describe('ProductUpdatePageComponent', () => {
     };
     let supplierServiceMock: {
         suppliers: ReturnType<typeof signal>;
+        error: ReturnType<typeof signal>;
         loadAll: ReturnType<typeof vi.fn>;
     };
     let notificationsServiceMock: {
@@ -67,6 +69,7 @@ describe('ProductUpdatePageComponent', () => {
 
         supplierServiceMock = {
             suppliers: signal([...MOCK_SUPPLIERS]),
+            error: signal(null),
             loadAll: vi.fn().mockReturnValue(of(MOCK_SUPPLIERS))
         };
 
@@ -148,7 +151,7 @@ describe('ProductUpdatePageComponent', () => {
                 weight: MOCK_PRODUCTS[0].weight,
                 imageUrl: MOCK_PRODUCTS[0].imageUrl,
                 categoryId: MOCK_PRODUCTS[0].category.id,
-                supplierId: MOCK_PRODUCTS[0].supplier.id
+                supplierId: MOCK_PRODUCTS[0].supplier?.id ?? ''
             });
         });
     });
@@ -189,7 +192,7 @@ describe('ProductUpdatePageComponent', () => {
                 weight: MOCK_PRODUCTS[0].weight,
                 imageUrl: MOCK_PRODUCTS[0].imageUrl,
                 categoryId: MOCK_PRODUCTS[0].category.id,
-                supplierId: MOCK_PRODUCTS[0].supplier.id
+                supplierId: MOCK_PRODUCTS[0].supplier?.id ?? ''
             });
             expect(notificationsServiceMock.notifySuccess).toHaveBeenCalledWith({
                 title: 'Product updated',
@@ -291,6 +294,29 @@ describe('ProductUpdatePageComponent', () => {
             expect(productServiceMock.loadById).not.toHaveBeenCalled();
             expect(productServiceMock.loadCategories).not.toHaveBeenCalled();
             expect(supplierServiceMock.loadAll).not.toHaveBeenCalled();
+        });
+    });
+
+    describe('retrySuppliers()', () => {
+        it('should call supplierService.loadAll', () => {
+            // Prepare
+            supplierServiceMock.loadAll.mockClear();
+
+            // Action
+            component.retrySuppliers();
+
+            // Verify
+            expect(supplierServiceMock.loadAll).toHaveBeenCalledOnce();
+        });
+    });
+
+    describe('supplierError()', () => {
+        it('should expose the supplierService error signal', () => {
+            // Prepare
+            (supplierServiceMock.error as ReturnType<typeof signal>).set('Failed to load suppliers');
+
+            // Verify
+            expect(component.supplierError()).toBe('Failed to load suppliers');
         });
     });
 });

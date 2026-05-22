@@ -30,6 +30,7 @@ export class ProductUpdatePageComponent implements OnInit {
     readonly suppliers = this.supplierService.suppliers;
     readonly loading = this.productService.loading;
     readonly error = this.productService.error;
+    readonly supplierError = this.supplierService.error;
     readonly isSubmitting = signal(false);
     private readonly productId = signal<string | null>(null);
 
@@ -44,7 +45,7 @@ export class ProductUpdatePageComponent implements OnInit {
                     weight: prod.weight,
                     imageUrl: prod.imageUrl,
                     categoryId: prod.category.id,
-                    supplierId: prod.supplier.id
+                    supplierId: prod.supplier?.id ?? ''
                 });
             }
         });
@@ -132,5 +133,9 @@ export class ProductUpdatePageComponent implements OnInit {
             this.productService.loadCategories().pipe(take(1)).subscribe();
             this.supplierService.loadAll().pipe(take(1)).subscribe();
         }
+    }
+
+    retrySuppliers(): void {
+        this.supplierService.loadAll().pipe(take(1)).subscribe();
     }
 }

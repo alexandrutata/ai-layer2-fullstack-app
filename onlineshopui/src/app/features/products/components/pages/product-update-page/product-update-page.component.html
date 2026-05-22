@@ -26,8 +26,21 @@
             </div>
         }
 
+        <!-- Supplier load error banner (non-blocking) -->
+        @if (supplierError() && !loading()) {
+            <div class="bg-yellow-50 dark:bg-yellow-900/20 border border-yellow-200 dark:border-yellow-800 rounded-lg p-4 mb-4 flex items-center justify-between">
+                <p class="text-yellow-800 dark:text-yellow-200 text-sm">Could not load suppliers. Supplier selection may be unavailable.</p>
+                <button
+                    (click)="retrySuppliers()"
+                    class="ml-4 px-3 py-1 text-sm bg-yellow-600 hover:bg-yellow-700 text-white rounded-md transition-colors"
+                >
+                    Retry
+                </button>
+            </div>
+        }
+
         <!-- Form -->
-        @if (product() && categories().length > 0 && suppliers().length > 0) {
+        @if (product() && categories().length > 0) {
             <app-card>
                 <app-product-form
                     [form]="form"

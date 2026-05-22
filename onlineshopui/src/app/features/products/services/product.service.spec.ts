@@ -4,7 +4,8 @@ import { provideHttpClientTesting, HttpTestingController } from '@angular/common
 import { take } from 'rxjs';
 import { ProductService } from './product.service';
 import { EnvironmentConfig } from '../../../core/types/providers/environment-config';
-import { MOCK_PRODUCTS, MOCK_CATEGORIES, MOCK_SUPPLIERS } from '../../../core/mocks/data/products.mock';
+import { MOCK_PRODUCTS, MOCK_CATEGORIES } from '../../../core/mocks/data/products.mock';
+import { MOCK_SUPPLIERS } from '../../../core/mocks/data/suppliers.mock';
 import { MOCK_ENVIRONMENT_CONFIG } from '../../../core/mocks/data/environment.mock';
 import { ProductDto } from '../../../core/types/dtos/product.dto';
 

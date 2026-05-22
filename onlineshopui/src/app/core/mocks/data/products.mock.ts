@@ -1,49 +1,27 @@
-import { ProductCategoryDto, ProductDto, SupplierDto } from '../../types/dtos/product.dto';
+import { ProductCategoryDto, ProductDto } from '../../types/dtos/product.dto';
+import { MOCK_SUPPLIERS } from './suppliers.mock';
+export { MOCK_SUPPLIERS };
 
 export const MOCK_CATEGORIES: ProductCategoryDto[] = [
     {
-        id: 'cat-1',
+        id: 'ca7e0001-0000-0000-0000-000000000001',
         name: 'Electronics',
         description: 'Electronic devices and gadgets'
     },
     {
-        id: 'cat-2',
+        id: 'ca7e0002-0000-0000-0000-000000000002',
         name: 'Clothing',
         description: 'Apparel and fashion items'
     },
     {
-        id: 'cat-3',
+        id: 'ca7e0003-0000-0000-0000-000000000003',
         name: 'Home & Garden',
         description: 'Home improvement and garden supplies'
     },
     {
-        id: 'cat-4',
+        id: 'ca7e0004-0000-0000-0000-000000000004',
         name: 'Sports',
         description: 'Sports equipment and accessories'
-    }
-];
-
-export const MOCK_SUPPLIERS: SupplierDto[] = [
-    {
-        id: 'sup-1',
-        name: 'TechSupply Co.',
-        email: 'contact@techsupply.com',
-        phone: '+1-800-123-4567',
-        address: '123 Silicon Valley Blvd, San Jose, CA 95101'
-    },
-    {
-        id: 'sup-2',
-        name: 'FashionWholesale Ltd.',
-        email: 'orders@fashionwholesale.com',
-        phone: '+1-800-234-5678',
-        address: '456 Garment District, New York, NY 10018'
-    },
-    {
-        id: 'sup-3',
-        name: 'HomeGoods Distributors',
-        email: 'sales@homegoods-dist.com',
-        phone: '+1-800-345-6789',
-        address: '789 Industrial Park, Chicago, IL 60601'
     }
 ];
 

@@ -1,5 +1,6 @@
 package msg.onlineshopapi.dto;
 
+import jakarta.validation.constraints.NotBlank;
 import lombok.*;
 
 import java.util.UUID;
@@ -12,6 +13,7 @@ import java.util.UUID;
 public class SupplierDto {
 
     private UUID id;
+    @NotBlank
     private String name;
     private String email;
     private String phone;

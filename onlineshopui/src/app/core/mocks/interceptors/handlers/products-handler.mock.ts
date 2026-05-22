@@ -1,11 +1,12 @@
 import { HttpResponse } from '@angular/common/http';
-import { MOCK_CATEGORIES, MOCK_PRODUCTS, MOCK_SUPPLIERS } from '../../data/products.mock';
+import { MOCK_CATEGORIES, MOCK_PRODUCTS } from '../../data/products.mock';
+import { MOCK_SUPPLIERS } from '../../data/suppliers.mock';
 import {
     CreateProductRequest,
     ProductDto,
-    SupplierDto,
     UpdateProductRequest
 } from '../../../types/dtos/product.dto';
+import { SupplierDto } from '../../../types/dtos/supplier.dto';
 
 let mockProducts = [...MOCK_PRODUCTS];
 let mockProductIdCounter = mockProducts.length + 1;
@@ -20,15 +21,6 @@ export function handleProductsFeature(
     context: ProductsHandlerContext
 ): HttpResponse<unknown> | null {
     const { method, path, body } = context;
-
-    if (method === 'GET' && path === '/suppliers') {
-        return handleGetSuppliers();
-    }
-
-    if (method === 'GET' && path.match(/^\/suppliers\/[\w-]+$/)) {
-        const id = path.split('/').pop()!;
-        return handleGetSupplierById(id);
-    }
 
     if (method === 'GET' && path === '/products/categories') {
         return handleGetCategories();
@@ -60,80 +52,31 @@ export function handleProductsFeature(
     return null;
 }
 
-function handleGetSuppliers(): HttpResponse<unknown> {
-    return new HttpResponse({
-        status: 200,
-        body: MOCK_SUPPLIERS
-    });
-}
-
-function handleGetSupplierById(id: string): HttpResponse<unknown> {
-    const supplier = MOCK_SUPPLIERS.find(s => s.id === id);
-
-    if (!supplier) {
-        return new HttpResponse({
-            status: 404,
-            statusText: 'Not Found',
-            body: { message: 'Supplier not found' }
-        });
-    }
-
-    return new HttpResponse({
-        status: 200,
-        body: supplier
-    });
-}
-
 function handleGetCategories(): HttpResponse<unknown> {
-    return new HttpResponse({
-        status: 200,
-        body: MOCK_CATEGORIES
-    });
+    return new HttpResponse({ status: 200, body: MOCK_CATEGORIES });
 }
 
 function handleGetProducts(): HttpResponse<unknown> {
-    return new HttpResponse({
-        status: 200,
-        body: mockProducts
-    });
+    return new HttpResponse({ status: 200, body: mockProducts });
 }
 
 function handleGetProductById(id: string): HttpResponse<unknown> {
     const product = mockProducts.find(p => p.id === id);
-
     if (!product) {
-        return new HttpResponse({
-            status: 404,
-            statusText: 'Not Found',
-            body: { message: 'Product not found' }
-        });
+        return new HttpResponse({ status: 404, statusText: 'Not Found', body: { message: 'Product not found' } });
     }
-
-    return new HttpResponse({
-        status: 200,
-        body: product
-    });
+    return new HttpResponse({ status: 200, body: product });
 }
 
 function handleCreateProduct(body: CreateProductRequest): HttpResponse<unknown> {
     const category = MOCK_CATEGORIES.find(c => c.id === body.categoryId);
-
     if (!category) {
-        return new HttpResponse({
-            status: 400,
-            statusText: 'Bad Request',
-            body: { message: 'Invalid category' }
-        });
+        return new HttpResponse({ status: 400, statusText: 'Bad Request', body: { message: 'Invalid category' } });
     }
 
     const supplier = MOCK_SUPPLIERS.find(s => s.id === body.supplierId);
-
     if (!supplier) {
-        return new HttpResponse({
-            status: 400,
-            statusText: 'Bad Request',
-            body: { message: 'Invalid supplier' }
-        });
+        return new HttpResponse({ status: 400, statusText: 'Bad Request', body: { message: 'Invalid supplier' } });
     }
 
     const newProduct: ProductDto = {
@@ -148,40 +91,27 @@ function handleCreateProduct(body: CreateProductRequest): HttpResponse<unknown> 
     };
 
     mockProducts.push(newProduct);
-
-    return new HttpResponse({
-        status: 201,
-        body: newProduct
-    });
+    return new HttpResponse({ status: 201, body: newProduct });
 }
 
 function handleUpdateProduct(id: string, body: UpdateProductRequest): HttpResponse<unknown> {
     const index = mockProducts.findIndex(p => p.id === id);
-
     if (index === -1) {
-        return new HttpResponse({
-            status: 404,
-            statusText: 'Not Found',
-            body: { message: 'Product not found' }
-        });
+        return new HttpResponse({ status: 404, statusText: 'Not Found', body: { message: 'Product not found' } });
     }
 
     const existingProduct = mockProducts[index];
     let category = existingProduct.category;
-    let supplier: SupplierDto = existingProduct.supplier;
+    let supplier: SupplierDto | null = existingProduct.supplier;
 
     if (body.categoryId) {
         const foundCategory = MOCK_CATEGORIES.find(c => c.id === body.categoryId);
-        if (foundCategory) {
-            category = foundCategory;
-        }
+        if (foundCategory) category = foundCategory;
     }
 
     if (body.supplierId) {
         const foundSupplier = MOCK_SUPPLIERS.find(s => s.id === body.supplierId);
-        if (foundSupplier) {
-            supplier = foundSupplier;
-        }
+        if (foundSupplier) supplier = foundSupplier;
     }
 
     const updatedProduct: ProductDto = {
@@ -196,28 +126,14 @@ function handleUpdateProduct(id: string, body: UpdateProductRequest): HttpRespon
     };
 
     mockProducts[index] = updatedProduct;
-
-    return new HttpResponse({
-        status: 200,
-        body: updatedProduct
-    });
+    return new HttpResponse({ status: 200, body: updatedProduct });
 }
 
 function handleDeleteProduct(id: string): HttpResponse<unknown> {
     const index = mockProducts.findIndex(p => p.id === id);
-
     if (index === -1) {
-        return new HttpResponse({
-            status: 404,
-            statusText: 'Not Found',
-            body: { message: 'Product not found' }
-        });
+        return new HttpResponse({ status: 404, statusText: 'Not Found', body: { message: 'Product not found' } });
     }
-
     mockProducts = mockProducts.filter(p => p.id !== id);
-
-    return new HttpResponse({
-        status: 204,
-        body: null
-    });
+    return new HttpResponse({ status: 204, body: null });
 }

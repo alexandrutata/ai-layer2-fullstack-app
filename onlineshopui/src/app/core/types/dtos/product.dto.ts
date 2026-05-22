@@ -1,15 +1,11 @@
+import { SupplierDto } from './supplier.dto';
+
+export type { SupplierDto };
+
 export type ProductCategoryDto = {
     id: string;
     name: string;
     description: string;
-};
-
-export type SupplierDto = {
-    id: string;
-    name: string;
-    email: string;
-    phone: string;
-    address: string;
 };
 
 export type ProductDto = {
@@ -19,7 +15,7 @@ export type ProductDto = {
     price: number;
     weight: number;
     category: ProductCategoryDto;
-    supplier: SupplierDto;
+    supplier: SupplierDto | null;
     imageUrl: string;
 };
 

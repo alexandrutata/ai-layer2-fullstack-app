@@ -7,7 +7,8 @@ import { ProductCreatePageComponent } from './product-create-page.component';
 import { ProductService } from '../../../services/product.service';
 import { SupplierService } from '../../../services/supplier.service';
 import { NotificationsService } from '../../../../../core/services/notifications.service';
-import { MOCK_CATEGORIES, MOCK_PRODUCTS, MOCK_SUPPLIERS } from '../../../../../core/mocks/data/products.mock';
+import { MOCK_CATEGORIES, MOCK_PRODUCTS } from '../../../../../core/mocks/data/products.mock';
+import { MOCK_SUPPLIERS } from '../../../../../core/mocks/data/suppliers.mock';
 import { AppNavRoutes } from '../../../../../core/config/constants/navigation.constants';
 import { ValidationMessages } from '../../../../../core/types/providers/validation-messages';
 import { DefaultValidationMessages } from '../../../../../core/config/constants/validation.constants';
@@ -143,8 +144,8 @@ describe('ProductCreatePageComponent', () => {
                 price: 99.99,
                 weight: 1.5,
                 imageUrl: 'http://test.com/image.jpg',
-                categoryId: 'cat-1',
-                supplierId: 'sup-1'
+                categoryId: MOCK_CATEGORIES[0].id,
+                supplierId: MOCK_SUPPLIERS[0].id
             });
 
             // Action
@@ -170,8 +171,8 @@ describe('ProductCreatePageComponent', () => {
                 price: 99.99,
                 weight: 1.5,
                 imageUrl: 'http://test.com/image.jpg',
-                categoryId: 'cat-1',
-                supplierId: 'sup-1'
+                categoryId: MOCK_CATEGORIES[0].id,
+                supplierId: MOCK_SUPPLIERS[0].id
             });
             productServiceMock.create.mockReturnValue(throwError(() => new Error('Failed')));
 
@@ -195,8 +196,8 @@ describe('ProductCreatePageComponent', () => {
                 price: 99.99,
                 weight: 1.5,
                 imageUrl: 'http://test.com/image.jpg',
-                categoryId: 'cat-1',
-                supplierId: 'sup-1'
+                categoryId: MOCK_CATEGORIES[0].id,
+                supplierId: MOCK_SUPPLIERS[0].id
             });
             expect(component.form.enabled).toBe(true);
 

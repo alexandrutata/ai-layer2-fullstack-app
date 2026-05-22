@@ -1,7 +1,15 @@
-import { FormControl, Validators } from '@angular/forms';
+import { FormControl, Validators, AbstractControl, ValidationErrors } from '@angular/forms';
 import { ProductDto } from '../../../core/types/dtos/product.dto';
 import { ProductFormGroup } from '../types/product-form.types';
 import { FormGroup } from '@angular/forms';
+
+const UUID_PATTERN = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+
+export function uuidValidator(control: AbstractControl): ValidationErrors | null {
+    const value = control.value as string;
+    if (!value) return null;
+    return UUID_PATTERN.test(value) ? null : { invalidUuid: true };
+}
 
 export function createProductForm(product?: ProductDto): ProductFormGroup {
     return new FormGroup({
@@ -23,11 +31,11 @@ export function createProductForm(product?: ProductDto): ProductFormGroup {
         }),
         categoryId: new FormControl<string>(product?.category?.id ?? '', {
             nonNullable: true,
-            validators: [Validators.required]
+            validators: [Validators.required, uuidValidator]
         }),
         supplierId: new FormControl<string>(product?.supplier?.id ?? '', {
             nonNullable: true,
-            validators: [Validators.required]
+            validators: [Validators.required, uuidValidator]
         }),
         imageUrl: new FormControl<string>(product?.imageUrl ?? '', {
             nonNullable: true,
