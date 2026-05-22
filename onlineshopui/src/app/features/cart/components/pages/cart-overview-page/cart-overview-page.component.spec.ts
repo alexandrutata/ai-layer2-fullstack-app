@@ -1,7 +1,7 @@
 import { TestBed, ComponentFixture } from '@angular/core/testing';
 import { Router } from '@angular/router';
 import { of, throwError } from 'rxjs';
-import { vi } from 'vitest';
+import { vi, type MockInstance } from 'vitest';
 import { CartOverviewPageComponent } from './cart-overview-page.component';
 import { CartService } from '../../../services/cart.service';
 import { ProductService } from '../../../../products/services/product.service';
@@ -40,11 +40,11 @@ describe('CartOverviewPageComponent', () => {
         notifySuccess: ReturnType<typeof vi.fn>;
         notifyError: ReturnType<typeof vi.fn>;
     };
-    let consoleErrorSpy: ReturnType<typeof vi.spyOn>;
+    let consoleErrorSpy: MockInstance;
 
     beforeEach(() => {
         // Mock console.error to suppress expected error logs during error handling tests
-        consoleErrorSpy = vi.spyOn(console, 'error').mockImplementation(() => {});
+        consoleErrorSpy = vi.spyOn(console, 'error').mockImplementation(vi.fn());
         cartServiceMock = {
             items: signal([...MOCK_CART_ITEMS]),
             totalItems: signal(3),
