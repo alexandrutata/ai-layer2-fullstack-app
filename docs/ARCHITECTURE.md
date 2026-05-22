@@ -1,239 +1,306 @@
 # Architecture
 
-This document describes the structure, data flow, and key decisions in the layer2-fullstack-app — a fullstack e-commerce platform with product catalog, shopping cart, order management, and role-based access.
-
-## Stack
-
-| Layer    | Technology             | Version |
-|----------|------------------------|---------|
-| Backend  | Spring Boot            | 4.0.6   |
-| Frontend | Angular                | 21.2    |
-| Database | PostgreSQL             | 18      |
-| Runtime  | Java                   | 21      |
-| Runtime  | Node.js                | 24+     |
-
-## System overview
-
-```
-Browser (Angular SPA)
-    │  JWT in Authorization header
-    ▼
-Spring Boot API  (localhost:3000/api)
-    │  JPA / Flyway
-    ▼
-PostgreSQL  (localhost:5433)
-```
-
-The frontend and backend are independently deployable. Communication is stateless JWT — no server-side sessions.
+This document describes the structure and design of the fullstack e-commerce application.
 
 ---
 
-## Backend
+## Overview
 
-### Package layout
+A fullstack e-commerce platform with role-based access control (Customer and Administrator). Customers can browse products, manage a shopping cart, and place orders. Administrators can create, update, and delete products.
 
-```
-onlineshopapi/src/main/java/msg/onlineshopapi/
-├── config/           OpenAPI / Swagger configuration
-├── controller/       REST endpoints (Auth, Product, ProductCategory, Order)
-├── dto/              Request and response shapes
-│   └── mapper/       Entity ↔ DTO conversions
-├── model/            JPA entities
-├── repository/       Spring Data JPA interfaces
-├── service/          Business logic
-│   └── strategy/     Pluggable order-fulfillment algorithms
-├── security/         Spring Security, JWT filter and service
-└── exception/        Global handler and typed exceptions
-```
+| Layer    | Technology          | Version  | Port |
+|----------|---------------------|----------|------|
+| Frontend | Angular             | 21.2.0   | 4200 |
+| Backend  | Spring Boot         | 4.0.6    | 3000 |
+| Database | PostgreSQL          | 18       | 5433 |
 
-### Data model
+---
+
+## Repository Layout
 
 ```
-product_categories ──< products ──< order_details >── orders >── users
-                                          │
-                        stocks >── locations ──< order_details (shipped_from)
+layer2-fullstack-app/
+├── docker/
+│   └── development/
+│       └── docker-compose.yml       # PostgreSQL container
+├── onlineshopapi/                   # Spring Boot backend
+├── onlineshopui/                    # Angular frontend
+├── CLAUDE.md                        # Claude Code project instructions
+└── README.md
 ```
 
-**Tables:**
+---
 
-| Table               | Purpose                                        |
-|---------------------|------------------------------------------------|
-| `users`             | Accounts; role is `CUSTOMER` or `ADMIN`        |
-| `products`          | Catalog items with price, weight, image        |
-| `product_categories`| Groups products                                |
-| `locations`         | Warehouse/fulfillment sites                    |
-| `stocks`            | Inventory per product per location (composite PK) |
-| `orders`            | Customer orders with delivery address          |
-| `order_details`     | Line items; records which location fulfilled each item |
+## Backend (`onlineshopapi`)
 
-Schema is managed by Flyway. Migrations live in `src/main/resources/db/migration/`.
+### Entry Point
 
-### API endpoints
+`OnlineShopApiApplication.java` — Spring Boot main class. Runs on port `3000` with context path `/api`.
 
-All routes are prefixed `/api`.
+### Package Structure
 
-| Method | Path                      | Auth     | Role  |
-|--------|---------------------------|----------|-------|
-| POST   | /auth/register            | Public   |       |
-| POST   | /auth/login               | Public   |       |
-| GET    | /auth/profile             | JWT      | Any   |
-| GET    | /products                 | JWT      | Any   |
-| GET    | /products/:id             | JWT      | Any   |
-| POST   | /products                 | JWT      | Admin |
-| PUT    | /products/:id             | JWT      | Admin |
-| DELETE | /products/:id             | JWT      | Admin |
-| GET    | /product-categories       | JWT      | Any   |
-| GET    | /orders                   | JWT      | Any   |
-| GET    | /orders/:id               | JWT      | Any   |
-| POST   | /orders                   | JWT      | Any   |
+```
+src/main/java/msg/onlineshopapi/
+├── config/        - OpenAPI / Swagger configuration
+├── controller/    - REST controllers
+├── dto/           - Request/response data transfer objects
+│   └── mapper/    - Entity ↔ DTO mappers
+├── exception/     - Custom exceptions and global handler
+├── model/         - JPA entities
+├── repository/    - Spring Data JPA repositories
+├── security/      - JWT filter, service, config
+└── service/       - Business logic
+    └── strategy/  - Order fulfillment strategy pattern
+```
 
-OpenAPI schema: `GET /v3/api-docs`  
-Swagger UI: `GET /swagger-ui.html`
+### Controllers
 
-### Order fulfillment strategies
+| Controller                   | Base Path          | Responsibility                     |
+|------------------------------|--------------------|------------------------------------|
+| `AuthController`             | `/api/auth`        | Register, login                    |
+| `ProductController`          | `/api/products`    | Product CRUD                       |
+| `ProductCategoryController`  | `/api/categories`  | Category listing                   |
+| `OrderController`            | `/api/orders`      | Order creation and retrieval       |
 
-The `OrderService` delegates stock allocation to a pluggable `OrderStrategy`. Strategy is selected via `app.order.strategy` in `application.yml`.
+### Data Model (JPA Entities)
 
-| Strategy              | Behavior                                          |
-|-----------------------|---------------------------------------------------|
-| `SINGLE_LOCATION`     | Fulfills the entire order from one location       |
-| `MOST_ABUNDANT`       | Allocates each item from the location with most stock |
+```
+User (id, firstName, lastName, email, password, role)
+  └── Order (id, userId, createdAt, address)
+        └── OrderDetail (orderId + productId + shippedFromId, quantity)
+
+Product (id, name, description, price, weight, imageUrl, categoryId)
+  └── ProductCategory (id, name, description)
+
+Stock (productId + locationId, quantity)
+  └── Location (id, name, country, city, county, streetAddress)
+
+Address (embedded in Order)
+```
+
+Composite primary keys: `StockId` (productId, locationId), `OrderDetailId` (orderId, productId, shippedFromId).
 
 ### Security
 
-- Spring Security with stateless session management
-- `JwtAuthFilter` validates the `Authorization: Bearer` header on every request
-- Passwords hashed with BCrypt
-- CORS origins configurable via `CORS_ALLOWED_ORIGINS`
-- Token TTL: 24 hours
+Authentication uses JWT tokens issued by the backend and validated on every request.
+
+```
+POST /api/auth/login      → returns JWT
+POST /api/auth/register   → creates user, returns JWT
+
+JwtAuthFilter             → extracts Bearer token from Authorization header
+JwtService                → signs and validates tokens (HS256, 24h expiry)
+UserDetailsServiceImpl    → loads user by email for Spring Security
+SecurityConfig            → configures public vs. protected routes
+```
+
+Roles: `ADMIN` and `CUSTOMER`. Endpoints are protected with `@PreAuthorize` annotations.
+
+### Order Fulfillment Strategy
+
+The order processing logic is interchangeable via `application.yml`:
+
+```yaml
+order:
+  strategy: SINGLE_LOCATION   # or MOST_ABUNDANT
+```
+
+| Strategy             | Behavior                                               |
+|----------------------|--------------------------------------------------------|
+| `SingleLocationStrategy`  | Ships all items from the warehouse with sufficient stock for the full order |
+| `MostAbundantStrategy`    | Ships each item from the warehouse that has the most stock of that product  |
+
+Both implement the `OrderStrategy` interface. `OrderStrategyConfig` selects the active bean.
+
+### Database Migrations (Flyway)
+
+```
+src/main/resources/db/migration/
+├── V1__create_tables.sql           # Schema: all 8 tables
+└── local/
+    └── V1.1__populate_mock_data.sql  # Seed data (loaded in local profile only)
+```
+
+Mock seed data includes 4 categories, 10 products, 2 warehouse locations, 3 users (1 admin + 2 customers), and 2 orders.
+
+### Key Configuration Files
+
+| File                                     | Purpose                                         |
+|------------------------------------------|-------------------------------------------------|
+| `src/main/resources/application.yml`     | Base config (port, DB env vars, JWT, CORS)      |
+| `src/main/resources/application-local.yml` | Local dev overrides (DB URL, CORS, JWT secret, Flyway local data) |
+| `pom.xml`                                | Maven dependencies and build config             |
 
 ---
 
-## Frontend
+## Frontend (`onlineshopui`)
 
-### Module layout
+### Entry Point
+
+`src/main.ts` bootstraps the app. `app.config.ts` wires providers (HTTP client, router, icons). `app.routes.ts` defines top-level lazy routes.
+
+### Directory Structure
 
 ```
-onlineshopui/src/app/
-├── app.ts            Root component
-├── app.routes.ts     Top-level route definitions
-├── app.config.ts     DI providers
-├── clib/             Shared component library
-│   ├── components/   card, error-message, icon, modal, navbar, notification-popup, spinner
-│   ├── layouts/      root-layout (navbar + router outlet)
-│   └── services/     theme.service (dark/light mode)
-├── core/
-│   ├── config/       Route constants, validation constants, icon constants
-│   ├── mocks/        Mock data and MSW request handlers
-│   ├── providers/    DI setup for environment, mock API, validation messages
-│   ├── services/     notifications.service
-│   └── types/        Shared DTOs, enums, provider types
-└── features/         Lazy-loaded feature modules
+src/app/
+├── clib/          - Shared component library
+├── core/          - App-wide config, services, and types
+└── features/      - Lazy-loaded feature modules
     ├── auth/
-    ├── products/
     ├── cart/
-    └── orders/
+    ├── orders/
+    └── products/
 ```
 
-### Route tree
+### clib — Shared Component Library
+
+| Component            | Description                               |
+|----------------------|-------------------------------------------|
+| `card`               | Generic card wrapper                      |
+| `error-message`      | Inline form/API error display             |
+| `icon`               | Lucide icon wrapper                       |
+| `modal`              | Dialog/modal overlay                      |
+| `navbar`             | Top navigation bar                        |
+| `notification-popup` | Toast notification                        |
+| `spinner`            | Loading spinner                           |
+| `root-layout`        | Layout shell with navbar                  |
+| `theme.service`      | Dark / light theme toggle                 |
+
+### core — Application Infrastructure
 
 ```
-/auth                   (guest guard)
-  /login
-  /register
-
-/                       (auth guard)
-  /products
-    /overview           Product catalog
-    /create             Create product  (admin)
-    /update/:id         Edit product    (admin)
-    /:id                Product detail
-  /cart
-    /overview
-  /orders
-    /overview
-    /details/:id
-
-** → /products/overview
+core/
+├── config/constants/    - Route constants, icon mappings, validation messages
+├── mocks/               - Mock Service Worker data and HTTP interceptor (mock mode)
+├── providers/           - DI providers (environment, mock API, validation messages)
+├── services/            - notifications.service (global toast state)
+└── types/               - Shared TypeScript interfaces, DTOs, and enums
 ```
 
-**Guards:**
+**Mock mode** (`npm run start:mock`) uses an Angular HTTP interceptor (`mock-api.interceptor.ts`) backed by handler files that return pre-defined payloads, enabling frontend development without a running backend.
 
-| Guard        | Protects                             |
-|--------------|--------------------------------------|
-| `authGuard`  | All routes under `/`                 |
-| `guestGuard` | `/auth/login`, `/auth/register`      |
-| `rolesGuard` | Admin-only routes (`/products/create`, `/products/update/:id`) |
+### features — Lazy-Loaded Modules
 
-### Authentication flow
+#### auth
 
-1. `AuthService` posts credentials to `/api/auth/login` and stores the returned JWT in `localStorage` under `access_token`.
-2. `AuthTokenInterceptor` reads the token and injects `Authorization: Bearer <token>` on every outgoing HTTP request.
-3. On 401, the interceptor clears storage and redirects to `/auth/login`.
+| File                       | Purpose                                      |
+|----------------------------|----------------------------------------------|
+| `login-page`               | Login form                                   |
+| `register-page`            | Registration form                            |
+| `auth.guard.ts`            | Redirects unauthenticated users to `/auth/login` |
+| `guest.guard.ts`           | Redirects authenticated users away from auth pages |
+| `roles.guard.ts`           | Restricts routes by user role                |
+| `auth-token.interceptor.ts`| Adds `Authorization: Bearer <token>` to all requests |
+| `auth.service.ts`          | Login/register API calls, token storage, user state |
 
-### State management
+#### products
 
-Angular Signals are used for reactive state (cart contents, current user, notifications). There is no external state library.
+| File                       | Purpose                                       |
+|----------------------------|-----------------------------------------------|
+| `product-catalog-page`     | Grid of all products (CUSTOMER + ADMIN)       |
+| `product-detail-page`      | Single product with quantity selector and add-to-cart |
+| `product-create-page`      | Admin: create new product                     |
+| `product-update-page`      | Admin: edit existing product                  |
+| `product-card`             | Reusable product display card                 |
+| `product-form`             | Shared form component (create/update)         |
+| `product.service.ts`       | Product CRUD API calls                        |
 
-### Mock mode
+#### cart
 
-Running `npm run start:mock` activates Mock Service Worker (MSW). MSW intercepts HTTP requests in the browser and returns fixtures from `core/mocks/`. This lets the frontend run without a backend.
+| File                       | Purpose                                       |
+|----------------------------|-----------------------------------------------|
+| `cart-overview-page`       | Cart contents with quantity controls          |
+| `cart-item-row`            | Single line item with increase/decrease/remove |
+| `cart-summary`             | Order subtotal and action buttons             |
+| `cart.service.ts`          | Cart state management (localStorage-backed)   |
 
-### Environments
+#### orders
 
-| Config        | `apiUrl`                  | Backend     |
-|---------------|---------------------------|-------------|
-| `development` | `http://localhost:3000/api` | Real Spring Boot |
-| `mock`        | *(MSW intercepts)*        | None        |
-| `production`  | `${API_URL}`              | Real        |
+| File                       | Purpose                                       |
+|----------------------------|-----------------------------------------------|
+| `orders-overview-page`     | List of all user orders                       |
+| `order-detail-page`        | Full details for a single order               |
+| `order-card`               | Order summary card (ID, date, total, item count) |
+| `orders.service.ts`        | Order create/list/get API calls               |
 
-File replacements are configured in `angular.json`.
+### Authentication Flow
+
+```
+1. User submits login form
+2. auth.service  →  POST /api/auth/login  →  JWT token
+3. Token stored in localStorage
+4. AuthTokenInterceptor adds header on every subsequent HTTP request
+5. authGuard reads token presence to allow/deny navigation
+6. Backend JwtAuthFilter validates token on protected endpoints
+```
+
+### Routing Structure
+
+```
+/                         → redirects to /products/overview
+/auth/login               → LoginPage        (guestGuard)
+/auth/register            → RegisterPage     (guestGuard)
+/products/overview        → ProductCatalogPage  (authGuard)
+/products/:id             → ProductDetailPage   (authGuard)
+/products/create          → ProductCreatePage   (authGuard + rolesGuard[ADMIN])
+/products/:id/edit        → ProductUpdatePage   (authGuard + rolesGuard[ADMIN])
+/cart                     → CartOverviewPage    (authGuard)
+/orders/overview          → OrdersOverviewPage  (authGuard)
+/orders/:id               → OrderDetailPage     (authGuard)
+```
+
+### Key Configuration Files
+
+| File                          | Purpose                                          |
+|-------------------------------|--------------------------------------------------|
+| `angular.json`                | Build configurations (development, mock, production) |
+| `src/environments/`           | Per-environment `apiUrl` and `envType` settings  |
+| `package.json`                | NPM scripts and dependency versions              |
+| `tsconfig.json`               | TypeScript config (strict, ES2022, decorators)   |
+| `src/styles.css`              | Tailwind CSS 4 entry point                       |
 
 ---
 
-## Infrastructure
+## Database
 
-### Docker (development)
+### Schema Summary
 
-`docker/development/docker-compose.yml` runs a single PostgreSQL 18 container.
+```sql
+product_categories (id, name, description)
+products           (id, name, description, price, weight, image_url, category_id)
+locations          (id, name, country, city, county, street_address)
+stocks             (product_id, location_id, quantity)          -- composite PK
+users              (id, first_name, last_name, email, password, role)
+orders             (id, user_id, created_at, country, city, county, street_address)
+order_details      (order_id, product_id, shipped_from_id, quantity)  -- composite PK
+```
 
-| Setting        | Value         |
-|----------------|---------------|
-| Container      | `postgres_db` |
-| Host port      | 5433          |
-| Database       | `shopdb`      |
-| User           | `shopuser`    |
-| Password       | `shoppassword`|
-| Volume         | `shop-data-volume` |
+### Local Credentials
 
-### Environment variables
-
-**Backend:**
-
-| Variable               | Purpose                         |
-|------------------------|---------------------------------|
-| `DB_HOST`              | Postgres host                   |
-| `DB_PORT`              | Postgres port                   |
-| `DB_NAME`              | Database name                   |
-| `DB_USERNAME`          | Database user                   |
-| `DB_PASSWORD`          | Database password               |
-| `CORS_ALLOWED_ORIGINS` | Comma-separated allowed origins |
-| `JWT_SECRET`           | JWT signing key                 |
-
-For local development, the `local` Spring profile pre-populates these from `application-local.yml`.
+```
+Host:     localhost:5433
+Database: shopdb
+User:     shopuser
+Password: shoppassword
+Schema:   onlineshop
+```
 
 ---
 
-## Key design decisions
+## Development Environments
 
-**Stateless JWT auth** — no session store required; scales horizontally without sticky sessions.
+| Mode           | Command                  | API Source              |
+|----------------|--------------------------|-------------------------|
+| Real backend   | `npm start`              | `http://localhost:3000/api` |
+| Mock backend   | `npm run start:mock`     | Angular HTTP interceptor |
+| Production     | `npm run build`          | Configured via env var  |
 
-**Composite-key stock table** — `(product_id, location_id)` models multi-warehouse inventory without a separate join entity.
+---
 
-**Pluggable order strategy** — `OrderStrategy` interface decouples fulfillment logic from the service layer; adding a new strategy requires no changes to `OrderService`.
+## API Documentation
 
-**Standalone Angular components** — no `NgModules`; each component declares its own imports, enabling fine-grained lazy loading.
+Swagger UI is available when the backend is running:
 
-**MSW mock layer** — frontend development is fully independent from backend availability; mock handlers mirror the real API contract.
-
-**Flyway migrations** — schema changes are versioned alongside code; `V1__create_tables.sql` is the single source of truth for the database structure.
+```
+http://localhost:3000/api/swagger-ui.html
+```

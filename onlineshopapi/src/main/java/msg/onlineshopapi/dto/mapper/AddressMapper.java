@@ -1,6 +1,7 @@
 package msg.onlineshopapi.dto.mapper;
 
 import msg.onlineshopapi.dto.AddressDto;
+import msg.onlineshopapi.dto.AddressRequestDto;
 import msg.onlineshopapi.model.Address;
 import org.springframework.stereotype.Component;
 
@@ -13,6 +14,15 @@ public class AddressMapper {
                 .city(address.getCity())
                 .county(address.getCounty())
                 .streetAddress(address.getStreetAddress())
+                .build();
+    }
+
+    public Address toEntity(AddressRequestDto dto) {
+        return Address.builder()
+                .country(dto.getCountry())
+                .city(dto.getCity())
+                .county(dto.getCounty())
+                .streetAddress(dto.getStreetAddress())
                 .build();
     }
 }

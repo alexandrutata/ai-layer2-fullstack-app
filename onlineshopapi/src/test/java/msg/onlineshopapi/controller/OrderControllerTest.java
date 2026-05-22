@@ -2,6 +2,7 @@ package msg.onlineshopapi.controller;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import msg.onlineshopapi.config.TestSecurityConfig;
+import msg.onlineshopapi.dto.AddressRequestDto;
 import msg.onlineshopapi.dto.OrderItemRequestDto;
 import msg.onlineshopapi.dto.OrderRequestDto;
 import msg.onlineshopapi.dto.OrderResponseDto;
@@ -99,6 +100,9 @@ class OrderControllerTest {
     @WithMockUser(username = "customer@test.com", roles = "CUSTOMER")
     void create_returnsOrder() throws Exception {
         OrderRequestDto request = OrderRequestDto.builder()
+                .address(AddressRequestDto.builder()
+                        .country("USA").city("Seattle").county("King")
+                        .streetAddress("123 Pine Street").build())
                 .items(List.of(OrderItemRequestDto.builder()
                         .productId(productId).quantity(2).build()))
                 .build();
@@ -122,6 +126,9 @@ class OrderControllerTest {
     @WithMockUser(username = "customer@test.com", roles = "CUSTOMER")
     void create_returns422_whenOrderNotProcessable() throws Exception {
         OrderRequestDto request = OrderRequestDto.builder()
+                .address(AddressRequestDto.builder()
+                        .country("USA").city("Seattle").county("King")
+                        .streetAddress("123 Pine Street").build())
                 .items(List.of(OrderItemRequestDto.builder()
                         .productId(productId).quantity(999).build()))
                 .build();

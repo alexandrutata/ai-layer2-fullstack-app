@@ -56,7 +56,7 @@
                         [subtotal]="subtotal()"
                         [itemCount]="itemCount()"
                         [isSubmitting]="isSubmitting()"
-                        (checkout)="onCheckout()"
+                        (checkout)="onCheckout($event)"
                         (clear)="onClearCart()"
                     />
                 </div>

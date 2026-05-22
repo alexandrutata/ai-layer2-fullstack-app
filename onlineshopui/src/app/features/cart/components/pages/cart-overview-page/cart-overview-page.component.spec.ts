@@ -11,6 +11,8 @@ import { MOCK_CART_ITEMS } from '../../../../../core/mocks/data/cart.mock';
 import { MOCK_PRODUCTS } from '../../../../../core/mocks/data/products.mock';
 import { MOCK_ORDERS } from '../../../../../core/mocks/data/orders.mock';
 import { signal } from '@angular/core';
+import { ValidationMessages } from '../../../../../core/types/providers/validation-messages';
+import { DefaultValidationMessages } from '../../../../../core/config/constants/validation.constants';
 
 describe('CartOverviewPageComponent', () => {
     let component: CartOverviewPageComponent;
@@ -78,7 +80,8 @@ describe('CartOverviewPageComponent', () => {
                 { provide: ProductService, useValue: productServiceMock },
                 { provide: OrdersService, useValue: ordersServiceMock },
                 { provide: Router, useValue: routerMock },
-                { provide: NotificationsService, useValue: notificationsServiceMock }
+                { provide: NotificationsService, useValue: notificationsServiceMock },
+                { provide: ValidationMessages, useValue: DefaultValidationMessages }
             ]
         });
 
@@ -166,12 +169,19 @@ describe('CartOverviewPageComponent', () => {
     });
 
     describe('onCheckout()', () => {
+        const mockAddress = {
+            country: 'USA',
+            city: 'Seattle',
+            county: 'King',
+            streetAddress: '123 Pine Street'
+        };
+
         it('should not proceed when cart is empty', () => {
             // Prepare
             cartServiceMock.items.set([]);
 
             // Action
-            component.onCheckout();
+            component.onCheckout(mockAddress);
 
             // Verify
             expect(ordersServiceMock.create).not.toHaveBeenCalled();
@@ -182,7 +192,7 @@ describe('CartOverviewPageComponent', () => {
             fixture.detectChanges();
 
             // Action
-            component.onCheckout();
+            component.onCheckout(mockAddress);
 
             // Verify
             expect(ordersServiceMock.create).toHaveBeenCalled();
@@ -200,7 +210,7 @@ describe('CartOverviewPageComponent', () => {
             fixture.detectChanges();
 
             // Action
-            component.onCheckout();
+            component.onCheckout(mockAddress);
 
             // Verify
             expect(notificationsServiceMock.notifyError).toHaveBeenCalledWith({

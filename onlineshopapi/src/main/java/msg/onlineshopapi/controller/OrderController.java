@@ -9,6 +9,7 @@ import msg.onlineshopapi.dto.OrderRequestDto;
 import msg.onlineshopapi.dto.OrderResponseDto;
 import msg.onlineshopapi.dto.mapper.OrderMapper;
 import msg.onlineshopapi.service.OrderService;
+import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -51,7 +52,7 @@ public class OrderController {
     @Operation(summary = "Create an order", description = "Creates a new order for the authenticated user. Requires authentication.")
     @ApiResponse(responseCode = "201", description = "Order created successfully")
     @ApiResponse(responseCode = "400", description = "Invalid order data")
-    public OrderResponseDto create(@RequestBody OrderRequestDto dto, Principal principal) {
+    public OrderResponseDto create(@Valid @RequestBody OrderRequestDto dto, Principal principal) {
         return orderMapper.toDto(orderService.createOrder(orderMapper.toEntity(dto), principal.getName()));
     }
 }
